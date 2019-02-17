@@ -9,6 +9,9 @@ Der Benutzer muss folgendes tun, um das Programm zu verwenden.
 	*  Fahrdienst = 1
 	*  1\. Nachtwache = 2
 	*  2\. Nachtwache = 3
+
+	Es müssen außerdem die Auflugsbeauftragten in die "Ausflug"-Spalte eingetragen werden.
+Sowie mindestens 6 Schaffer in der "Schaffer"-Spalte, die die Nachtwachen vor dem Abbau übernehmen und die Tagesleitung am Abbau.
 3. Das Programm aufrufen durch `./Dienstplan.exe template.csv`.
 4. Der fertige Dienstplan ist nun in der Datei **Dienstplan.csv** enthalten.
 
