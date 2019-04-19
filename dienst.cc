@@ -13,7 +13,7 @@ int quersumme(int*,int);
 int ntest(int*,int,int,int,int*);
 int nbtest(int*,int*,int,int,int,int,int);
 void copy(int*,int*,int,int,int);
-int fairness(int,int*,int,int,int);
+int fairness(int,int*,int,int,int,int*);
 
 
 int main(int argc, char *argument[]){
@@ -120,33 +120,33 @@ while(lastday!=2){
 int i = rand() % anzahl ;
 if(Attributliste[i][0]!= 0 && Attributliste[i][2] && !ergebnis[i][dauer-1][0]){ergebnis[i][dauer-1][0]=1;ergebnis[i][dauer][0]+=1; lastday++;} 
 }
+
+
+
 //eine Kopie des bisherigen ergebnis
 int cpergebnis[anzahl][dauer+1][dienste];
 //kopiere das Eregebnis
 copy(&cpergebnis[0][0][0],&ergebnis[0][0][0],anzahl,dauer,dienste);
 
 //***********************Neubetreuer Dienste werden zugeteilt*******************
-
 //Die Neubetreuer Dienste werden zuerst festgelegt
 while(ntest(&ergebnis[0][0][0],anzahl,dienste,dauer,&Attributliste[0][0])){
+
 //Schleife endet wenn ein passendes ergebnis gefunden wurde
 //Zufallszahlen werden gezogen um einer Person einen Dienst zuzuweisen
 //wenn die Schleife mehr als 100000 mal durchgelaufen ist wird das voherige ergebnis wiederhergestellt und von neuem angefangen
 if(count>100000){count=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste);}
 int i = rand() % anzahl ;
-int j = rand() % dauer-1 ;
+int j = rand() % (dauer-1) ;
 int k = rand() % dienste ;
 if(!Attributliste[i][1]) continue;//Wenn kein Neubetreuer wird der Dienst abgewiesen
 
 if(anwesenheit[i][j]){//Es wird getestet ob die Person an dem Tag anwesend ist
 
-if(Attributliste[i][1] && nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
+if(j==0 && quersumme(ergebnis[i][j+1],dienste)){continue;}//keine zwei Dienste nacheinander
 
-if((k==2 || k==3) && j>0 && ((ergebnis[i][j-1][2] || ergebnis[i][j-1][3]) || (ergebnis[i][j+1][2] || ergebnis[i][j+1][3]))){ continue;}//Nachttwachen werden nicht an leut vergeben die Nachtwache hatten
-
-if(j==0 && (k==2 || k==3) && (ergebnis[i][j+1][2] || ergebnis[i][j+1][3])) continue;//Nachttwachen werden nicht an leut vergeben die Nachtwache haben werden wegen zufälliger Verteilung
-
-if(j>0 && k==0 && ((ergebnis[i][j-1][2] || ergebnis[i][j-1][3]) || (ergebnis[i][j+1][2] || ergebnis[i][j+1][3]))) continue;//Es werden keine Tagesleitungen an leute vergeben die Nachtwache hatten
+if(j>0 && (quersumme(ergebnis[i][j-1],dienste) || quersumme(ergebnis[i][j+1],dienste))){continue;}//keine zwei Dienste nacheinander
+if(nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
 
 if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
 if(ergebnis[i][dauer][k]) continue;//schon einmal den Dienst gehabt
@@ -171,40 +171,25 @@ int alle=0;//fairnessverteilung, der gesamtanzahl an diensten die personen haben
 //**********************Alle Betreuer werden vergeben*********************
 while(test(&ergebnis[0][0][0],anzahl,dienste,dauer,&Attributliste[0][0])){//die Schleife endet wenn ein passendes ergebnis gefunden wurde
 //Zufallszahlen werden gezogen um einer Person einen Dienst zuzuweisen
-if(count>100000){count=0;fahrdienst=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste); alle=0;}
-//cout << count << '\n';
+if(count>10000000){count=0;fahrdienst=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste); alle=0;}
 int i = rand() % anzahl ;
-int j = rand() % dauer-1 ;
+int j = rand() % (dauer-1) ;
 int k = rand() % dienste ;
 
 
-/*if(!(count%1000)){
-for(int m=0;m<anzahl;m++)
-	cout << quersumme(ergebnis[i][15],dienste) << "  ";
-}*/
+
 if(anwesenheit[i][j]){//Es wird getestet ob die Person an dem Tag anwesend ist
-alle=fairness(alle,&ergebnis[0][0][0],anzahl,dauer,dienste);
-if(quersumme(ergebnis[i][15],dienste)<alle){//sorgt dafür, dass jeder die gleiche anzahl an diensten hat
+alle=fairness(alle,&ergebnis[0][0][0],anzahl,dauer,dienste,&anwesenheit[0][0]);
 
-if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
+if(j==0 && quersumme(ergebnis[i][j+1],dienste)){continue;}//keine zwei Dienste nacheinander
 
-if(fahrdienst!=dauer-1){//Fahrdienste werden zuerst an Fahrer verteilt
+if(j>0 && (quersumme(ergebnis[i][j-1],dienste) || quersumme(ergebnis[i][j+1],dienste))){continue;}//keine zwei Dienste nacheinander
 
-if(k==1 && !Attributliste[i][4]) continue;//Fahrer werden zuerst verteilt
-fahrdienst++;
-}
-
+if(quersumme(anwesenheit[i],dauer)>7){//sorgt dafür, dass jeder die gleiche anzahl an diensten hat
+if(!(quersumme(ergebnis[i][15],dienste)<alle)) continue;
 if(Attributliste[i][1] && nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
 
-if(j>0 && k==1 && ((ergebnis[i][j-1][2] || ergebnis[i][j-1][3]) || (ergebnis[i][j+1][2] || ergebnis[i][j+1][3]))){continue;}//Fahrdienste werden nicht an leut vergeben die Nachtwache hatten
-
-if(j>0 && (k==2 || k==3) && ((ergebnis[i][j-1][2] || ergebnis[i][j-1][3]) || (ergebnis[i][j+1][2] || ergebnis[i][j+1][3]))) continue;//Nachttwachen werden nicht an leut vergeben die Nachtwache hatten
-
-
-
-if(j==0 && (k==2 || k==3) && (ergebnis[i][j+1][2] || ergebnis[i][j+1][3])) continue;//Nachttwachen werden nicht an leut vergeben die Nachtwache haben werden wegen zufälliger Verteilung
-
-if(j>0 && k==0 && ((ergebnis[i][j-1][2] || ergebnis[i][j-1][3]) || (ergebnis[i][j+1][2] || ergebnis[i][j+1][3]))) continue;//Es werden keine Tagesleitungen an leute vergeben die Nachtwache hatten
+if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
 
 if((Attributliste[i][1]==0) && Attributliste[i][0]==k) continue;//Wenn kein Neubetreuer wird der Dienst abgewiesen wenn nicht erwünscht
 
@@ -215,13 +200,45 @@ int Tageszaeler=0;
 for(int l=0; l<anzahl;l++)
 		Tageszaeler+=ergebnis[l][j][k];
 if(Tageszaeler!=2){//Es wird getetstet ob der Dienst an diesem tag bereits vergeben ist
+	if(fahrdienst!=dauer-1){//Fahrdienste werden zuerst an Fahrer verteilt
+
+	if(k==1 && !Attributliste[i][4]) continue;//Fahrer werden zuerst verteilt
+	fahrdienst++;
+	}
 //Dienste wird gesetzt und der Dienstzähler erhöht
 	ergebnis[i][j][k]=1;
 	ergebnis[i][dauer][k]+=1;
-	}}}}}
+	}}}}
+else{//Für Leute die weniger als 7 Tage da sind
+if(Attributliste[i][1] && nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
+
+if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
+
+if((Attributliste[i][1]==0) && Attributliste[i][0]==k) continue;//Wenn kein Neubetreuer wird der Dienst abgewiesen wenn nicht erwünscht
+
+if(ergebnis[i][dauer][k]<2){//Personen können maximal 2 mal den Dienst erhalten
+if(!quersumme(ergebnis[i][j],dienste)){//Es wird getestet ob die Person bereits einen Dienst an diesem Tag hat
+
+int Tageszaeler=0;
+for(int l=0; l<anzahl;l++)
+		Tageszaeler+=ergebnis[l][j][k];
+if(Tageszaeler!=2){//Es wird getetstet ob der Dienst an diesem tag bereits vergeben ist
+	if(fahrdienst!=dauer-1){//Fahrdienste werden zuerst an Fahrer verteilt
+
+	if(k==1 && !Attributliste[i][4]) continue;//Fahrer werden zuerst verteilt
+	fahrdienst++;
+	}
+//Dienste wird gesetzt und der Dienstzähler erhöht
+	ergebnis[i][j][k]=1;
+	ergebnis[i][dauer][k]+=1;
+	}}}}
+}
+
+
 //Iterationszählung wird erhöht
 count++;
 }
+
 
 //Ausgabedatei wird geöffent
 std::ofstream Daten("Dienstplan.csv");
@@ -322,21 +339,17 @@ for(int i=0;i<anzahl;i++)
 }
 
 int nbtest(int *ergebnis,int *Attributliste,int anzahl,int dauer,int dienste,int tag, int dienst){//Ein test um zu prüfen ob bereits ein Neubetreuer diesen Dienst an diesem Tag hat
-for(int i=0;i<anzahl;i++)
-	if(ergebnis[dienste*(dauer+1)*i+tag*dienste+dienst] && Attributliste[anzahl*i+1]) return 1;
-return 0;
-
-
-
-
+for(int i=0;i<anzahl;i++){
+	if(ergebnis[dienste*(dauer+1)*i+tag*dienste+dienst] && Attributliste[5*i+1]){return 1;}
 
 }
+return 0;
+}
 
-int fairness(int alle,int *ergebnis,int anzahl,int dauer,int dienste){//testet die Verteilung der Dienste und passt die höchste Belegung an
+int fairness(int alle,int *ergebnis,int anzahl,int dauer,int dienste, int *Anwesenheit){//testet die Verteilung der Dienste und passt die höchste Belegung an
 int test=0;
 	for(int i=0;i<anzahl;i++){
-
-		if(quersumme(&ergebnis[dienste*(dauer+1)*i+15*dienste],dienste)<alle) break;
+		if(quersumme(&ergebnis[dienste*(dauer+1)*i+15*dienste],dienste)<alle && quersumme(&Anwesenheit[dauer*i],dauer)>7) break;
 		if(i==anzahl-1) test=1;
 	}
 	if(test)  return ++alle;
