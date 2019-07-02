@@ -22,9 +22,9 @@ int main(int argc, char *argument[]){
 //Anzahl der Personen
 int grosse;
 //Der Tag an dem Der Ausflug ist
-int ausflugtag=6;
+int ausflugtag=5;
 //Dauer des Zeltlagers
-int dauer=15;
+int dauer=14;
 //Anzahl der zu vergebenden Dienste
 int dienste=4;
 //Datei aus der Ausgelesen wird
@@ -120,8 +120,7 @@ while(lastday!=2){
 int i = rand() % anzahl ;
 if(Attributliste[i][0]!= 0 && Attributliste[i][2] && !ergebnis[i][dauer-1][0]){ergebnis[i][dauer-1][0]=1;ergebnis[i][dauer][0]+=1; lastday++;} 
 }
-
-
+std::cout << "Premissen Dienste gefüllt\n";
 
 //eine Kopie des bisherigen ergebnis
 int cpergebnis[anzahl][dauer+1][dienste];
@@ -131,11 +130,10 @@ copy(&cpergebnis[0][0][0],&ergebnis[0][0][0],anzahl,dauer,dienste);
 //***********************Neubetreuer Dienste werden zugeteilt*******************
 //Die Neubetreuer Dienste werden zuerst festgelegt
 while(ntest(&ergebnis[0][0][0],anzahl,dienste,dauer,&Attributliste[0][0])){
-
 //Schleife endet wenn ein passendes ergebnis gefunden wurde
 //Zufallszahlen werden gezogen um einer Person einen Dienst zuzuweisen
 //wenn die Schleife mehr als 100000 mal durchgelaufen ist wird das voherige ergebnis wiederhergestellt und von neuem angefangen
-if(count>100000){count=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste);}
+if(count>10000){count=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste);}
 int i = rand() % anzahl ;
 int j = rand() % (dauer-1) ;
 int k = rand() % dienste ;
@@ -148,7 +146,7 @@ if(j==0 && quersumme(ergebnis[i][j+1],dienste)){continue;}//keine zwei Dienste n
 if(j>0 && (quersumme(ergebnis[i][j-1],dienste) || quersumme(ergebnis[i][j+1],dienste))){continue;}//keine zwei Dienste nacheinander
 if(nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
 
-if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
+if(j==dauer-2 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
 if(ergebnis[i][dauer][k]) continue;//schon einmal den Dienst gehabt
 if(!quersumme(ergebnis[i][j],dienste)){//Es wird getestet ob die Person bereits einen Dienst an diesem Tag hat
 int Tageszaeler=0;
@@ -168,10 +166,12 @@ copy(&cpergebnis[0][0][0],&ergebnis[0][0][0],anzahl,dauer,dienste);
 int fahrdienst=0;
 int alle=0;//fairnessverteilung, der gesamtanzahl an diensten die personen haben
 
+std::cout << "Neubetreuer Dienste vergeben\n";
+
 //**********************Alle Betreuer werden vergeben*********************
 while(test(&ergebnis[0][0][0],anzahl,dienste,dauer,&Attributliste[0][0])){//die Schleife endet wenn ein passendes ergebnis gefunden wurde
 //Zufallszahlen werden gezogen um einer Person einen Dienst zuzuweisen
-if(count>10000000){count=0;fahrdienst=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste); alle=0;}
+if(count>100000){count=0;fahrdienst=0;copy(&ergebnis[0][0][0],&cpergebnis[0][0][0],anzahl,dauer,dienste); alle=0;}
 int i = rand() % anzahl ;
 int j = rand() % (dauer-1) ;
 int k = rand() % dienste ;
@@ -186,10 +186,10 @@ if(j==0 && quersumme(ergebnis[i][j+1],dienste)){continue;}//keine zwei Dienste n
 if(j>0 && (quersumme(ergebnis[i][j-1],dienste) || quersumme(ergebnis[i][j+1],dienste))){continue;}//keine zwei Dienste nacheinander
 
 if(quersumme(anwesenheit[i],dauer)>7){//sorgt dafür, dass jeder die gleiche anzahl an diensten hat
-if(!(quersumme(ergebnis[i][15],dienste)<alle)) continue;
+if(!(quersumme(ergebnis[i][dauer],dienste)<alle)) continue;
 if(Attributliste[i][1] && nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
 
-if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
+if(j==dauer-2 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
 
 if((Attributliste[i][1]==0) && Attributliste[i][0]==k) continue;//Wenn kein Neubetreuer wird der Dienst abgewiesen wenn nicht erwünscht
 
@@ -212,7 +212,7 @@ if(Tageszaeler!=2){//Es wird getetstet ob der Dienst an diesem tag bereits verge
 else{//Für Leute die weniger als 7 Tage da sind
 if(Attributliste[i][1] && nbtest(&ergebnis[0][0][0],&Attributliste[0][0], anzahl,dauer,dienste,j, k)) continue;//keine zwei Neubetreuer an einem dienst
 
-if(j==12 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
+if(j==dauer-2 && (k==2 || k==3) && !Attributliste[i][2]) continue; //Wenn kein Schaffer, so wird am letzten Tag keine Nachtwache vergeben.
 
 if((Attributliste[i][1]==0) && Attributliste[i][0]==k) continue;//Wenn kein Neubetreuer wird der Dienst abgewiesen wenn nicht erwünscht
 
@@ -239,7 +239,10 @@ if(Tageszaeler!=2){//Es wird getetstet ob der Dienst an diesem tag bereits verge
 count++;
 }
 
+std::cout << "Betreuerjobs alle vergeben\n";
 
+
+std::cout << "schreibe zu Datei\n";
 //Ausgabedatei wird geöffent
 std::ofstream Daten("Dienstplan.csv");
 //linke obere Zelle leer
@@ -247,13 +250,13 @@ Daten << ",";
 //Die Wochentage werden in die Tabelle einegtragen
 for(int tag=0;tag<dauer;tag++){
 		switch(tag%7){
-		case 0: Daten << "Freitag,";break;
-		case 1: Daten << "Samstag,";break;
-		case 2: Daten << "Sonntag,";break;
-		case 3: Daten << "Montag,";break;
-		case 4: Daten << "Dienstag,";break;
-		case 5: Daten << "Mittwoch,";break;
-		case 6: Daten << "Donnerstag,";break;
+		case 6: Daten << "Freitag,";break;
+		case 0: Daten << "Samstag,";break;
+		case 1: Daten << "Sonntag,";break;
+		case 2: Daten << "Montag,";break;
+		case 3: Daten << "Dienstag,";break;
+		case 4: Daten << "Mittwoch,";break;
+		case 5: Daten << "Donnerstag,";break;
 		}
 }
 //in die nächste Zeile gehen 
@@ -349,7 +352,7 @@ return 0;
 int fairness(int alle,int *ergebnis,int anzahl,int dauer,int dienste, int *Anwesenheit){//testet die Verteilung der Dienste und passt die höchste Belegung an
 int test=0;
 	for(int i=0;i<anzahl;i++){
-		if(quersumme(&ergebnis[dienste*(dauer+1)*i+15*dienste],dienste)<alle && quersumme(&Anwesenheit[dauer*i],dauer)>7) break;
+		if(quersumme(&ergebnis[dienste*(dauer+1)*i+dauer*dienste],dienste)<alle && quersumme(&Anwesenheit[dauer*i],dauer)>7) break;
 		if(i==anzahl-1) test=1;
 	}
 	if(test)  return ++alle;
